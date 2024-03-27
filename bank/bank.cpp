@@ -1,83 +1,104 @@
-﻿#include <iostream>
+#include <iostream> 
+using namespace std;
 
 class BankAccount {
 private:
-    int accountNumber; 
-    double balance; 
-    double interestRate; 
-
+    int accountNum;
+    double accountBalance;
+    double rateInterest;
 public:
-    BankAccount(int accountNumber, double initialBalance) {
-        this->accountNumber = accountNumber;
-        this->balance = initialBalance;
-        this->interestRate = 0.0; 
-    }
+    BankAccount(int num, double balance) : accountNum(num), accountBalance(balance), rateInterest(0.0) {}
 
     void deposit(double amount) {
         if (amount > 0) {
-            balance += amount;
-            std::cout << "Депозит в размере $" << amount << " успешно.\n";
+            accountBalance += amount;
+            cout << "Депозит успешно добавлен. Текущий баланс: " << accountBalance << endl;
         }
         else {
-            std::cout << "Недействительная сумма депозита.\n";
+            cout << "Сумма должна быть больше нуля!" << endl;
         }
     }
 
-    void withdraw(double amount) {
-        if (amount > 0 && amount <= balance) {
-            balance -= amount;
-            std::cout << "Изъятие $" << amount << " успешно.\n";
+    bool withdraw(double amount) {
+        if (amount <= 0) {
+            cout << "Сумма должна быть больше нуля!" << endl;
+            return false;
         }
-        else {
-            std::cout << "Неверная сумма вывода или недостаточно средств.\n";
+        else if (amount > accountBalance) {
+            cout << "Недостаточно средств на счете!" << endl;
+            return false;
         }
+        accountBalance -= amount;
+        cout << "Средства успешно сняты. Текущий баланс: " << accountBalance << endl;
+        return true;
     }
 
     double getBalance() const {
-        return balance;
+        return accountBalance;
     }
 
-    double getInterest() const {
-        return balance * interestRate * (1.0 / 12.0);
-    }
-
-    void setInterestRate(double rate) {
-        interestRate = rate;
+    void setInterestRate(double newRate) {
+        if (newRate >= 0) {
+            rateInterest = newRate;
+        }
+        else {
+            cout << "Процентная ставка не может быть отрицательной!" << endl;
+        }
     }
 
     int getAccountNumber() const {
-        return accountNumber;
+        return accountNum;
     }
+
     friend bool transfer(BankAccount& from, BankAccount& to, double amount);
 };
 
 bool transfer(BankAccount& from, BankAccount& to, double amount) {
-    if (amount > 0 && amount <= from.balance) {
-        from.balance -= amount;
-        to.balance += amount;
-        std::cout << "Передача $" << amount << " успешно.\n";
+    if (from.withdraw(amount)) {
+        to.deposit(amount);
         return true;
     }
-    else {
-        std::cout << "Неверная сумма вывода или недостаточно средств.\n";
-        return false;
-    }
+    return false;
 }
-
+void showMenu() {
+    cout << "\n Меню Управления Счетом\n";
+    cout << "1. Показать баланс\n";
+    cout << "2. Депозит\n";
+    cout << "3. Снять наличные\n";
+    cout << "4. Выход\n";
+    cout << "Выберите действие: ";
+}
 int main() {
     setlocale(LC_ALL, "Russian");
-   
-    BankAccount account1(12345, 1000.0);
-    BankAccount account2(54321, 500.0);
-    account1.deposit(200.0);
-    account1.withdraw(50.0);
-    account2.deposit(300.0);
-    transfer(account1, account2, 150.0);
-    std::cout << "Баланс счета 1: $" << account1.getBalance() << std::endl;
-    std::cout << "Баланс счета 2: $" << account2.getBalance() << std::endl;
+    BankAccount myAccount(1, 1000);
+    int choice;
+    double amount;
 
+    while (true) {
+        showMenu();
+        cin >> choice;
+        switch (choice) {
+        case 1:
+            cout << "Текущий баланс: " << myAccount.getBalance() << endl;
+            break;
+        case 2:
+            cout << "Введите сумму для депозита: ";
+            cin >> amount;
+            myAccount.deposit(amount);
+            break;
+        case 3:
+            cout << "Введите сумму для снятия: ";
+            cin >> amount;
+            if (!myAccount.withdraw(amount)) {
+                cout << "Операция не выполнена." << endl;
+            }
+            break;
+        case 4:
+            cout << "Выход из программы..." << endl;
+            return 0;
+        default:
+            cout << "Неверный выбор. Пожалуйста, попробуйте снова." << endl;
+        }
+    }
     return 0;
 }
-
-
-
